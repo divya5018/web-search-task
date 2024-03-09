@@ -7,6 +7,8 @@ class WebCrawler:
     def __init__(self):
         self.index = defaultdict(list)
         self.visited = set()
+        self.max=50 # max limit for urls is 50
+        self.count=0 # counting the no of urls
 
     def crawl(self, url, base_url=None):
         if url in self.visited:
@@ -17,7 +19,10 @@ class WebCrawler:
             response = requests.get(url)
             soup = BeautifulSoup(response.text, 'html.parser')
             self.index[url] = soup.get_text()
-
+            self.count =self.count +1 # after everyone insertion of url into dict inserting the current count of the value 
+            if self.count ==self.max: # checking current count is equal to max return 
+                return
+            
             for link in soup.find_all('a'):
                 href = link.get('href')
                 if href:
@@ -27,6 +32,9 @@ class WebCrawler:
                         if  href.startswith(base_url or url):   #fixed if condition
                             href = urljoin(base_url or url, href)
                             self.crawl(href, base_url=base_url or url)
+            # extact and follow links on the current page
+            for link in self.extract_links(soup,base_url or url):
+                self.crawl(link,base_url=base_url or url)
         except Exception as e:
             print(f"Error crawling {url}: {e}")
 
