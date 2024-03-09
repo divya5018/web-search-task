@@ -38,6 +38,25 @@ class WebCrawler:
         except Exception as e:
             print(f"Error crawling {url}: {e}")
 
+    def extract_links(self, soup, base_url):
+        # Extract links from the current page
+        links = []
+        tcount=0    #keep track of link count
+
+        for anchor_tag in soup.find_all('a', href=True):
+            href = anchor_tag['href']
+            absolute_link = urljoin(base_url, href)
+
+            # Check if the absolute link is within the same domain
+            if urlparse(absolute_link).netloc == urlparse(base_url).netloc:
+                links.append(absolute_link)
+                tcount+=1
+                if tcount>50:     #limiting url count to 50
+                    return links
+                
+
+        return links           
+
     def search(self, keyword):
         results = []
         for url, text in self.index.items():
